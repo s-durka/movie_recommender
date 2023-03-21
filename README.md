@@ -1,5 +1,4 @@
-# movie_recommender
-kNN movie recommender
+# kNN movie recommender
 
 Movie recommender based on the kNN classification algorithm
 Author: Stanisław Durka
