@@ -70,7 +70,7 @@ def recommend_films(user_id, n, knn, X):
         what's left is to delete items that our user has already watched, and
         sort the vector by the value of reviews
     '''
-    # 'TODO:' this part uses dense arrays, ideally it should use sparse vectors like the rest of the program
+    # this part uses dense arrays, ideally it should use sparse vectors like the rest of the program
     my_reviews = X.getrow(users[0,1]).todense()[0]
     # print("my reviews:\n" ,my_reviews[:10])
     total_scores = row.todense()[0]
