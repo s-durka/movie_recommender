@@ -1,6 +1,5 @@
 '''
 Movie recommender based on the kNN classification algorithm
-Author: Stanisław Durka
 dataset: 
 http://grouplens.org/datasets/movielens/100k/
 (movielens 100k dataset: Rating prediction dataset (rating scale 1-5))
@@ -56,10 +55,8 @@ def recommend_films(user_id, n, knn, X):
     for i in range(1, users.size): # users[0] is the user_id of our user minus 1
         print(users[0,i])
         row = X.getrow(users[0,i])
-        # print("r1: ", row.count_nonzero())
         row = row*weights[0,i]
-        # print("r2: ", row.count_nonzero())
-        # print(row.shape)
+        
         if (i > 1):
             row = row + prev_row
         prev_row = row
@@ -72,7 +69,7 @@ def recommend_films(user_id, n, knn, X):
     '''
     # this part uses dense arrays, ideally it should use sparse vectors like the rest of the program
     my_reviews = X.getrow(users[0,1]).todense()[0]
-    # print("my reviews:\n" ,my_reviews[:10])
+
     total_scores = row.todense()[0]
     total_scores = np.array(list(zip(np.arange(1, total_scores.size+1), total_scores))) # total_scores[i][j], **i == ITEM ID**! (because of range(1,size+1))
     total_scores = total_scores[my_reviews == 0.]
@@ -83,7 +80,7 @@ def recommend_films(user_id, n, knn, X):
     dtype= [('uid', int), ('score', float)]
     total_scores = np.array(total_scores, dtype=dtype)
     total_scores = np.sort(total_scores, order='score')[::-1]
-    # print("total scores:\n", total_scores[:10])
+
     return total_scores[:n]['uid']
 
 # example usage:
