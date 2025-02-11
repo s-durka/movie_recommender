@@ -26,26 +26,23 @@ def create_matrix(df, users, films):
         matrix[user-1][item-1] = rating
     return csr_matrix(matrix)
 
-def recommend_films(user_id, n, knn, X):
+def recommend_films(user_id, n, knn, ratings):
     user = user_id - 1  # user indexes in array start with 0
-    k_nearest = knn.kneighbors(X.getrow(user))
+    k_nearest = knn.kneighbors(ratings.getrow(user))
 
     weights = k_nearest[0]  # cosine distances 
     users = k_nearest[1]  # user id's - 1
 
-    prev_row = csr_matrix((1, X.shape[1]))
+    prev_row = csr_matrix((1, ratings.shape[1]))
     for i in range(1, users.size):  # users[0] is the user_id of our user minus 1
-        row = X.getrow(users[0, i]) * weights[0, i]
+        row = ratings.getrow(users[0, i]) * weights[0, i]
         prev_row += row
 
-    # this part uses dense arrays, ideally it should use sparse vectors like the rest of the program
-    my_reviews = X.getrow(user).todense().A1
-    total_scores = prev_row.todense().A1
-    total_scores = np.array(list(zip(np.arange(1, total_scores.size + 1), total_scores)))
-    total_scores = total_scores[my_reviews == 0.]
-    total_scores = total_scores[total_scores[:, 1] > 0]
+    my_reviews = ratings.getrow(user)
+    total_scores = prev_row.multiply(my_reviews == 0).tocoo()
+    total_scores = [(i + 1, total_scores.data[idx]) for idx, i in enumerate(total_scores.col) if total_scores.data[idx] > 0]
 
-    # convert back to tuple:
+    # convert total_scores back to tuple:
     total_scores = [tuple(i) for i in total_scores]
     dtype = [('uid', int), ('score', float)]
     total_scores = np.array(total_scores, dtype=dtype)
