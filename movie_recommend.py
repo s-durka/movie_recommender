@@ -5,6 +5,7 @@ http://grouplens.org/datasets/movielens/100k/
 (movielens 100k dataset: Rating prediction dataset (rating scale 1-5))
 '''
 
+import argparse
 import pandas as pd
 from scipy.sparse import csr_matrix
 import numpy as np
@@ -39,6 +40,7 @@ def recommend_films(user_id, n, knn, ratings):
         prev_row += row
 
     my_reviews = ratings.getrow(user)
+    # the line below is suboptimal
     total_scores = prev_row.multiply(my_reviews == 0).tocoo()
     total_scores = [(i + 1, total_scores.data[idx]) for idx, i in enumerate(total_scores.col) if total_scores.data[idx] > 0]
 
@@ -59,21 +61,24 @@ def load_movie_names(file_path):
     movie_dict = pd.Series(df.movie_title.values, index=df.movie_id).to_dict()
     return movie_dict
 
-def main():
-    df = load_data('./ml-100k/u.data')
-    movie_dict = load_movie_names('./ml-100k/u.item')
+def main(dataset_path, user_id, top_n):
+    df = load_data(f"{dataset_path}/u.data")
+    movie_dict = load_movie_names(f"{dataset_path}/u.item")
 
     matrix_sparse = create_matrix(df, USERS, FILMS)
 
     neigh = NearestNeighbors(n_neighbors=NEIGHBORS + 1, metric='cosine')
     neigh.fit(matrix_sparse)
 
-    USER_ID = 1
-    TOP_N = 5
-
-    result = recommend_films(USER_ID, TOP_N, neigh, matrix_sparse)
+    result = recommend_films(user_id, top_n, neigh, matrix_sparse)
     result = [movie_dict[i] for i in result]
-    print(f"Hi, User {USER_ID}. Based on your other reviews, here are {TOP_N} films you might like:\n{ ',\n'.join(map(str, result)) }")
+    print(f"Hi, User {user_id}. Based on your other reviews, here are {top_n} films you might like:\n{ ',\n'.join(map(str, result)) }")
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description='kNN Movie Recommender')
+    parser.add_argument('--dataset_path', type=str, default='./ml-100k/', help='Path to the dataset')
+    parser.add_argument('--user', type=int, default=1, help='User ID for recommendations')
+    parser.add_argument('--n', type=int, default=5, help='Number of movies to recommend')
+
+    args = parser.parse_args()
+    main(args.dataset_path, args.user, args.n)
