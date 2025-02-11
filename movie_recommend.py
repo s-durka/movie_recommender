@@ -6,7 +6,7 @@ http://grouplens.org/datasets/movielens/100k/
 '''
 
 import pandas as pd
-from scipy.sparse import csr_array
+from scipy.sparse import csr_matrix
 import numpy as np
 from sklearn.neighbors import KNeighborsClassifier 
 from sklearn.neighbors import NearestNeighbors
@@ -17,20 +17,20 @@ USERS = 943
 
 NEIGHBORS = 5 # how many neighbors as the parameter for kNN
 
-test = pd.read_csv('test.csv', sep=' ', names=['user id', 'item id', 'rating', 'timestamp'])
+# test = pd.read_csv('test.csv', sep=' ', names=['user id', 'item id', 'rating', 'timestamp'])
 df = pd.read_csv('./ml-100k/u.data', sep='\t', names=['user id', 'item id', 'rating', 'timestamp'])
 df.drop(['timestamp'], axis=1,inplace=True)
 
 matrix = np.zeros([USERS,FILMS])
 
 # iterate rows of dataframe
-for i in range (df.shape[0]): 
+for i in range (df.shape[0]):
     user = df['user id'][i]
     item = df['item id'][i]
     rating = df['rating'][i]
     matrix[user-1][item-1] = rating
 
-matrix_sparse = csr_array(matrix)
+matrix_sparse = csr_matrix(matrix)
 
 neigh = NearestNeighbors(n_neighbors=NEIGHBORS+1,metric='cosine') # using the cosine metric in order to only compare non-zero ratings 
 neigh.fit(matrix_sparse)
@@ -51,7 +51,7 @@ def recommend_films(user_id, n, knn, X):
     users = k_nearest[1] # user id's - 1
     
 
-    prev_row = csr_array((0,0))
+    prev_row = csr_matrix((0,0))
     for i in range(1, users.size): # users[0] is the user_id of our user minus 1
         print(users[0,i])
         row = X.getrow(users[0,i])
